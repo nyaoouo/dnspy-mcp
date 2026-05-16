@@ -1,0 +1,28 @@
+[project]
+name = "dnspy-mcp"
+version = "0.1.0"
+description = "Multi-instance MCP supervisor for dnSpyEx"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/nyaoouo/dnspy-mcp"
+
+[project.scripts]
+dnspy-mcp = "dnspy_mcp.server:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"dnspy_mcp" = [
+    "plugin_assets/tools-schema.json",
+    "plugin_assets/net48/*.dll",
+    "plugin_assets/net8.0-windows/*.dll",
+    "ui/*.html",
+]

@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>10.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!--
+    Auto-select plugin target framework based on the layout of $(DnspyHome).
+      dnSpy-net-win64        (modern .NET 8, self-contained) ships netstandard.dll in bin/  =>  net8.0-windows
+      dnSpy-net-framework    (.NET Framework 4.8)            does NOT ship netstandard.dll  =>  net48
+    Override either with -p:DnspyKind=net|netframework or -p:TargetFramework=...
+  -->
+  <PropertyGroup>
+    <DnspyKind Condition="'$(DnspyKind)' == '' AND '$(DnspyHome)' != '' AND Exists('$(DnspyHome)\bin\netstandard.dll')">net</DnspyKind>
+    <DnspyKind Condition="'$(DnspyKind)' == ''">netframework</DnspyKind>
+    <DnspyDefaultTfm Condition="'$(DnspyKind)' == 'net'">net8.0-windows</DnspyDefaultTfm>
+    <DnspyDefaultTfm Condition="'$(DnspyKind)' == 'netframework'">net48</DnspyDefaultTfm>
+  </PropertyGroup>
+</Project>

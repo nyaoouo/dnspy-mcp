@@ -1,0 +1,83 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(DnspyDefaultTfm)</TargetFramework>
+    <AssemblyName>dnspy_mcp.x</AssemblyName>
+    <RootNamespace>DnspyMcp</RootNamespace>
+    <UseWpf>true</UseWpf>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="dnlib" Version="4.4.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
+
+  <!--
+    Modern .NET emits a class-library bin/ that omits NuGet runtime assemblies
+    (they're resolved via deps.json against the NuGet cache at runtime). For a
+    plugin loaded by dnSpy this is wrong — the deps must be present next to the
+    plugin DLL. Mirror the net48 default behaviour by copying lock-file assemblies.
+  -->
+  <PropertyGroup Condition="'$(DnspyKind)' == 'net'">
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(DnspyHome)' == ''">
+    <Compile Remove="TheExtension.cs" />
+    <Compile Remove="Settings\**\*.cs" />
+    <Page Remove="Settings\**\*.xaml" />
+    <ApplicationDefinition Remove="Settings\**\*.xaml" />
+  </ItemGroup>
+
+  <!--
+    dnSpy contract assemblies are referenced from the dnSpy install at build time.
+    Set <DnspyHome>C:\path\to\dnSpy</DnspyHome> in a Directory.Build.props.user file,
+    or pass /p:DnspyHome=... on the command line. The TargetFramework above
+    auto-selects between net48 and net8.0-windows based on which dnSpy variant
+    DnspyHome points at (see plugin/Directory.Build.props).
+  -->
+  <PropertyGroup Condition="'$(DnspyHome)' != ''">
+    <DefineConstants>$(DefineConstants);DNSPY</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(DnspyHome)' != ''">
+    <Reference Include="dnSpy.Contracts.DnSpy">
+      <HintPath>$(DnspyHome)\bin\dnSpy.Contracts.DnSpy.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="dnSpy.Contracts.Logic">
+      <HintPath>$(DnspyHome)\bin\dnSpy.Contracts.Logic.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- System.ComponentModel.Composition (MEF):
+       net48           => v4.8 ref assemblies (GAC-style)
+       net8.0-windows  => HintPath the copy bundled with the modern dnSpy build,
+                          guaranteeing the exact 8.0.0.0 dnSpy.Contracts links against. -->
+  <ItemGroup Condition="'$(DnspyHome)' != '' AND '$(DnspyKind)' == 'netframework'">
+    <Reference Include="System.ComponentModel.Composition" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(DnspyHome)' != '' AND '$(DnspyKind)' == 'net'">
+    <Reference Include="System.ComponentModel.Composition">
+      <HintPath>$(DnspyHome)\bin\System.ComponentModel.Composition.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!--
+    After a real plugin build (DnspyHome set), stage the produced DLLs into
+    the Python package's plugin_assets/<TFM>/ folder so `dnspy-mcp install-plugin`
+    can find them. Skipped for skeleton builds without DnspyHome.
+  -->
+  <Target Name="CopyToPluginAssets" AfterTargets="Build" Condition="'$(DnspyHome)' != ''">
+    <PropertyGroup>
+      <PluginAssetsDir>$(MSBuildThisFileDirectory)..\..\..\src\dnspy_mcp\plugin_assets\$(TargetFramework)\</PluginAssetsDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_PluginStagedFiles Include="$(TargetDir)*.dll" />
+    </ItemGroup>
+    <MakeDir Directories="$(PluginAssetsDir)" />
+    <Copy SourceFiles="@(_PluginStagedFiles)" DestinationFolder="$(PluginAssetsDir)" SkipUnchangedFiles="true" />
+    <Message Importance="high" Text="dnspy_mcp: staged plugin DLLs to $(PluginAssetsDir)" />
+  </Target>
+</Project>

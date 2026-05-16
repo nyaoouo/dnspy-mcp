@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Tooling
+.idea/
+.vscode/
+
+# Generated plugin artifacts shipped via release pipeline only
+src/dnspy_mcp/plugin_assets/net48/*.dll
+!src/dnspy_mcp/plugin_assets/net48/.gitkeep
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Local dev plans, scratch, downloaded tools — never in the published repo
+.claude/
+docs/
+user_request.md

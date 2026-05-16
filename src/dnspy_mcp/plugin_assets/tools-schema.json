@@ -1,0 +1,426 @@
+{
+  "schema_version": 1,
+  "plugin_version": "1.0.0.0",
+  "tools": [
+    {
+      "name": "decompile_method",
+      "description": "Decompile a method to C# given assembly identifier \u002B method token.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assembly": {
+            "type": "string"
+          },
+          "method_token": {
+            "type": "integer",
+            "description": "Metadata token (decimal or hex string also accepted)."
+          }
+        },
+        "required": [
+          "assembly",
+          "method_token"
+        ]
+      }
+    },
+    {
+      "name": "find_path_to_type",
+      "description": "Find chains of properties/fields walking from from_type to to_type within the same module (BFS, up to max_depth hops, returns at most 10 paths).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assembly": {
+            "type": "string",
+            "description": "Assembly name, full name, or path."
+          },
+          "from_type": {
+            "type": "string",
+            "description": "Fully qualified name (or token) of the starting type."
+          },
+          "to_type": {
+            "type": "string",
+            "description": "Fully qualified name (or token) of the target type."
+          },
+          "max_depth": {
+            "type": "integer",
+            "description": "Maximum number of hops (default 5)."
+          }
+        },
+        "required": [
+          "assembly",
+          "from_type",
+          "to_type"
+        ]
+      }
+    },
+    {
+      "name": "get_assembly_info",
+      "description": "Get metadata about a loaded assembly: name, full_name, path, runtime_version, module_count, type_count.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assembly": {
+            "type": "string",
+            "description": "Assembly name, full name, or path."
+          }
+        },
+        "required": [
+          "assembly"
+        ]
+      }
+    },
+    {
+      "name": "get_method_il",
+      "description": "Get the IL body of a method by its metadata token.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assembly": {
+            "type": "string",
+            "description": "Assembly name, full name, or path."
+          },
+          "method_token": {
+            "type": "integer",
+            "description": "Metadata token (int or 0x-prefixed hex) of the MethodDef."
+          }
+        },
+        "required": [
+          "assembly",
+          "method_token"
+        ]
+      }
+    },
+    {
+      "name": "get_type_fields",
+      "description": "Get fields of a type, optionally filtered by wildcard pattern (*), with pagination.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assembly": {
+            "type": "string",
+            "description": "Assembly name, full name, or path."
+          },
+          "type": {
+            "type": "string",
+            "description": "Type full name or token."
+          },
+          "pattern": {
+            "type": "string",
+            "description": "Wildcard pattern (default \u0027*\u0027 = all)."
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Pagination cursor."
+          },
+          "page_size": {
+            "type": "integer",
+            "description": "Results per page (default 50)."
+          }
+        },
+        "required": [
+          "assembly",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "get_type_info",
+      "description": "Get detailed metadata about a specific type (by full name or token).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assembly": {
+            "type": "string",
+            "description": "Assembly name, full name, or path."
+          },
+          "type": {
+            "type": "string",
+            "description": "Type full name (e.g. \u0027System.String\u0027) or hex/decimal token."
+          }
+        },
+        "required": [
+          "assembly",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "get_type_property",
+      "description": "Get metadata for a single property of a type by name.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assembly": {
+            "type": "string",
+            "description": "Assembly name, full name, or path."
+          },
+          "type": {
+            "type": "string",
+            "description": "Type full name or token."
+          },
+          "property": {
+            "type": "string",
+            "description": "Property name (exact)."
+          }
+        },
+        "required": [
+          "assembly",
+          "type",
+          "property"
+        ]
+      }
+    },
+    {
+      "name": "list_assemblies",
+      "description": "List loaded assemblies as {path, full_name, name} tuples.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "list_methods",
+      "description": "List methods of a type with pagination.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assembly": {
+            "type": "string",
+            "description": "Assembly name, full name, or path."
+          },
+          "type": {
+            "type": "string",
+            "description": "Type full name or token."
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Pagination cursor."
+          },
+          "page_size": {
+            "type": "integer",
+            "description": "Results per page (default 50)."
+          }
+        },
+        "required": [
+          "assembly",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "list_types",
+      "description": "List types in a loaded assembly with optional namespace filter and pagination.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assembly": {
+            "type": "string",
+            "description": "Assembly name, full name, or path."
+          },
+          "namespace": {
+            "type": "string",
+            "description": "Optional namespace filter (exact match)."
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Pagination cursor (opaque string returned by previous call)."
+          },
+          "page_size": {
+            "type": "integer",
+            "description": "Number of results per page (default 50)."
+          }
+        },
+        "required": [
+          "assembly"
+        ]
+      }
+    },
+    {
+      "name": "load_assembly",
+      "description": "Open an assembly file in dnSpy.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Filesystem path to the assembly."
+          }
+        },
+        "required": [
+          "path"
+        ]
+      }
+    },
+    {
+      "name": "patch_method_il",
+      "description": "Apply a list of edits to the in-memory IL body of a method. Snapshots the original on first call so revert_method_il can restore it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assembly": {
+            "type": "string",
+            "description": "Assembly name, full name, or path."
+          },
+          "method_token": {
+            "type": "integer",
+            "description": "Metadata token of the MethodDef."
+          },
+          "edits": {
+            "type": "array",
+            "description": "Ordered list of edits to apply.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "op": {
+                  "type": "string",
+                  "description": "insert|replace|remove|set_locals|set_init_locals"
+                },
+                "at_offset": {
+                  "type": "integer",
+                  "description": "Instruction offset (required for insert/replace/remove)."
+                },
+                "instructions": {
+                  "type": "array",
+                  "description": "Instructions to insert/replace with.",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "opcode": {
+                        "type": "string"
+                      },
+                      "operand": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "opcode"
+                    ]
+                  }
+                },
+                "count": {
+                  "type": "integer",
+                  "description": "Number of instructions to remove/replace (default 1)."
+                },
+                "locals": {
+                  "type": "array",
+                  "description": "List of type names for set_locals.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "init_locals": {
+                  "type": "boolean",
+                  "description": "Value for set_init_locals."
+                }
+              },
+              "required": [
+                "op"
+              ]
+            }
+          }
+        },
+        "required": [
+          "assembly",
+          "method_token",
+          "edits"
+        ]
+      }
+    },
+    {
+      "name": "revert_all_pending_patches",
+      "description": "Revert every in-memory method patch made by patch_method_il. Optional \u0027assembly\u0027 scopes the revert to one loaded assembly.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assembly": {
+            "type": "string",
+            "description": "Optional assembly identifier; default = all assemblies."
+          }
+        }
+      }
+    },
+    {
+      "name": "revert_method_il",
+      "description": "Restore the IL body snapshot taken by patch_method_il, reverting all patches.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assembly": {
+            "type": "string",
+            "description": "Assembly name, full name, or path."
+          },
+          "method_token": {
+            "type": "integer",
+            "description": "Metadata token of the MethodDef."
+          }
+        },
+        "required": [
+          "assembly",
+          "method_token"
+        ]
+      }
+    },
+    {
+      "name": "save_assembly",
+      "description": "Save an assembly back to disk. Optional \u0027path\u0027 writes to a new location.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assembly": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "description": "Optional destination path (default: original)."
+          }
+        },
+        "required": [
+          "assembly"
+        ]
+      }
+    },
+    {
+      "name": "search_types",
+      "description": "Search for types by wildcard pattern across all loaded assemblies (or a specific one).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Wildcard pattern (use * for any characters)."
+          },
+          "assembly": {
+            "type": "string",
+            "description": "Optional assembly scope filter."
+          },
+          "cursor": {
+            "type": "string",
+            "description": "Pagination cursor."
+          },
+          "page_size": {
+            "type": "integer",
+            "description": "Results per page (default 50)."
+          }
+        },
+        "required": [
+          "pattern"
+        ]
+      }
+    },
+    {
+      "name": "unload_assembly",
+      "description": "Remove a loaded assembly from the document tree.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "assembly": {
+            "type": "string",
+            "description": "Path, full_name or short name."
+          }
+        },
+        "required": [
+          "assembly"
+        ]
+      }
+    }
+  ]
+}

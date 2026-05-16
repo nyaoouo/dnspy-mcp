@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>dnspy-mcp instances</title>
+  <style>
+    body { font-family: Segoe UI, sans-serif; margin: 24px; }
+    table { border-collapse: collapse; min-width: 640px; }
+    th, td { padding: 8px 12px; border-bottom: 1px solid #ddd; text-align: left; }
+    button { padding: 6px 10px; }
+  </style>
+</head>
+<body>
+  <h1>dnspy-mcp instances</h1>
+  <button id="refresh">Refresh</button>
+  <table>
+    <thead>
+      <tr><th>Session</th><th>PID</th><th>Port</th><th>Active</th><th>Action</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <script>
+    async function refresh() {
+      const resp = await fetch('/api/instances');
+      const data = await resp.json();
+      const rows = document.getElementById('rows');
+      rows.innerHTML = '';
+      for (const item of data.sessions || []) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${item.session_id}</td><td>${item.pid ?? ''}</td><td>${item.port ?? ''}</td><td>${item.is_active}</td>
+          <td><button data-id="${item.session_id}">Close</button></td>`;
+        rows.appendChild(tr);
+      }
+    }
+    document.getElementById('refresh').addEventListener('click', refresh);
+    document.body.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-id]');
+      if (!btn) return;
+      await fetch(`/api/instances/${encodeURIComponent(btn.dataset.id)}/close`, { method: 'POST' });
+      refresh();
+    });
+    refresh();
+    setInterval(refresh, 5000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<UserControl x:Class="DnspyMcp.Settings.McpSettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <StackPanel Margin="10">
+    <CheckBox Content="Enable standalone MCP server" IsChecked="{Binding Enabled}"/>
+    <TextBlock Margin="0,10,0,2">Port</TextBlock>
+    <TextBox Text="{Binding Port}"/>
+    <TextBlock Margin="0,10,0,2">Bind address (loopback only)</TextBlock>
+    <TextBox Text="{Binding Bind}"/>
+    <TextBlock Margin="0,10,0,2">Bearer token</TextBlock>
+    <TextBox Text="{Binding Token}"/>
+    <TextBlock Margin="0,12,0,0"
+               Text="In supervised mode this page is ignored — supervisor provides port/token via env vars."
+               Foreground="Gray" FontStyle="Italic"/>
+  </StackPanel>
+</UserControl>
