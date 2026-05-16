@@ -6,9 +6,23 @@
     <UseWpf>true</UseWpf>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!--
+    dnlib + System.Text.Json:
+      modern dnSpy bundles dnlib.dll in its bin/, and the BCL ships System.Text.Json in-box
+        => HintPath dnlib (so its version always matches dnSpy's own copy)
+        => no System.Text.Json reference needed
+      .NET Framework dnSpy: no in-box System.Text.Json, no shared dnlib resolution
+        => keep NuGet PackageReferences (same as before)
+  -->
+  <ItemGroup Condition="'$(DnspyKind)' == 'netframework'">
     <PackageReference Include="dnlib" Version="4.4.0" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(DnspyKind)' == 'net' AND '$(DnspyHome)' != ''">
+    <Reference Include="dnlib">
+      <HintPath>$(DnspyHome)\bin\dnlib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <!--
